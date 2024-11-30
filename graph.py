@@ -1,5 +1,6 @@
 from tkinter import Tk, BOTH, Canvas
 import time
+import random
 
 class Window:
     def __init__(self, width, height):
@@ -49,6 +50,7 @@ class Cell:
         self.__x2 = None
         self.__y2 = None
         self.__win = win
+        self._visited = False
     
     def draw(self, x1, y1, x2, y2):
         self.__x1 = x1
@@ -107,6 +109,7 @@ class Maze:
         cell_size_x,
         cell_size_y,
         win=None,
+        seed=None
     ):
         self._x1 = x1
         self._y1 = y1
@@ -117,6 +120,12 @@ class Maze:
         self._win = win
         self._create_cells()
         self._break_entrance_and_exit()
+        self.seed = seed
+        if self.seed != None:
+            random.seed(seed)
+        else:
+            random.seed(0)
+        self._break_walls_r(0, 0)
         
     def _create_cells(self):
         self._cells = []
@@ -147,7 +156,42 @@ class Maze:
     def _break_entrance_and_exit(self):
         self._cells[0][0].has_left_wall = False
         self._draw_cell(0, 0)
-        self._animate()
         self._cells[-1][-1].has_right_wall = False
         self._draw_cell(self._num_rows -1, self._num_cols -1)
-        self._animate()
+    
+    def _break_walls_r(self, i, j):
+        while(True):
+            self.to_visit = []
+            if j - 1 >= 0:
+                if self._cells[j-1][i]._visited is False:
+                    self.to_visit.append((i, j -1))
+            if j + 1 < self._num_cols:
+                if self._cells[j+1][i]._visited is False:
+                    self.to_visit.append((i, j +1))
+            if i + 1 < self._num_rows:
+                if self._cells[j][i+1]._visited is False:
+                    self.to_visit.append((i + 1, j))
+            if i - 1 >= 0:
+                if self._cells[j][i-1]._visited is False:
+                    self.to_visit.append((i - 1, j))
+            if len(self.to_visit) == 0:
+                self._draw_cell(i, j)
+                return
+            choosed_cell = random.choice(self.to_visit)
+            if choosed_cell == (i, j - 1):
+                self._cells[j - 1][i]._visited = True
+                self._cells[j][i].has_left_wall = False
+                self._cells[j - 1][i].has_right_wall = False
+            elif choosed_cell == (i, j + 1):
+                self._cells[j + 1][i]._visited = True
+                self._cells[j][i].has_right_wall = False
+                self._cells[j + 1][i].has_left_wall = False
+            elif choosed_cell == (i + 1, j):
+                self._cells[j][i + 1]._visited = True
+                self._cells[j][i].has_bottom_wall = False
+                self._cells[j][i + 1].has_top_wall = False
+            elif choosed_cell == (i - 1, j):
+                self._cells[j][i - 1]._visited = True
+                self._cells[j][i].has_top_wall = False
+                self._cells[j][i - 1].has_bottom_wall = False
+            self._break_walls_r(choosed_cell[0], choosed_cell[1])

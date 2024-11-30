@@ -11,6 +11,5 @@ win = Window(800, 600)
 # cell2.draw(400, 400, 550, 550)
 
 # cell1.draw_move(cell2)
-maze = Maze(300, 300, 5, 5, 50, 50, win)
-
+maze = Maze(300, 300, 10, 10, 50, 50, win, 10)
 win.wait_for_close()
